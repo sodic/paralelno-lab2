@@ -1,3 +1,4 @@
+from os import system
 from random import randint
 from hashlib import sha1
 from collections import namedtuple
@@ -79,14 +80,16 @@ def winner(state: State) -> Optional[int]:
 
 
 def print_table(table: np.array):
+    system("clear")
     symbols = {
-        COMPUTER: 'O',
-        PLAYER: 'X',
+        COMPUTER: "\x1b[1m\x1b[31mO\x1b[0m",
+        PLAYER: "\x1b[1m\x1b[32mO\x1b[0m",
         EMPTY: '.',
     }
     rows, cols = table.shape
     for i in range(rows - 1, -1, -1):
-        print(" ".join(symbols[x] for x in table[i, :]))
+        print("  ".join(symbols[x] for x in table[i, :]))
+    print("".join(f"{i:<3d}" for i in range(cols)))
 
 
 def make_move(player, table, col):
@@ -111,39 +114,17 @@ def move_and_check_victory(state: State, col):
 
 
 def play_game():
-    state1 = np.flip(np.array([[0, 0, 0, 0, 0, 0, 0],
-                               [0, 0, 0, 0, 0, 0, 0],
-                               [0, 0, 0, 0, 0, 0, 0],
-                               [0, 2, 0, 0, 0, 0, 0],
-                               [0, 1, 0, 0, 0, 0, 0],
-                               [0, 1, 0, 0, 0, 0, 0],
-                               [0, 1, 2, 0, 0, 0, 0],
-                               [0, 2, 1, 0, 0, 0, 0],
-                               [2, 1, 2, 1, 0, 0, 0],
-                               [2, 2, 1, 2, 0, 0, 1]]), axis=0)
-    state0 = np.flip(np.array([[0, 0, 0, 0, 0, 0, 0],
-                               [0, 0, 0, 0, 0, 0, 0],
-                               [0, 0, 0, 0, 0, 0, 0],
-                               [0, 2, 0, 0, 0, 0, 0],
-                               [0, 1, 0, 0, 0, 0, 0],
-                               [0, 1, 0, 0, 0, 0, 0],
-                               [0, 1, 0, 0, 0, 0, 0],
-                               [0, 2, 1, 0, 0, 0, 0],
-                               [2, 1, 2, 0, 0, 0, 0],
-                               [2, 2, 1, 2, 0, 0, 1]]), axis=0)
-    state1 = State((1, 3), COMPUTER, state1)
-    state0 = State((2, 2), COMPUTER, state0)
-    statei = initial_state(NUMBER_OF_COLS)
-    state = statei
+    state = initial_state(NUMBER_OF_COLS)
     print_table(state.table)
     while True:
-        col = int(input("Koji stupac bi igro? "))
+        col = int(input("U koji stupac ubacujes zeton? "))
         state, won = move_and_check_victory(state, col)
         if won:
             print("Pobijedio si")
             break
         print_table(state.table)
 
+        print("Razmisljam...")
         state, won = move_and_check_victory(state, decide_move(state))
         if won:
             print("Pusiona")
@@ -167,8 +148,6 @@ def initial_state(cols) -> State:
 
 
 def decide_move(start_state: State):
-    print(hash((start_state.position, start_state.last_player, tuple(map(tuple, start_state.table)))))
-
     first_level = successors(start_state)
     second_level = flatten(successors(state) for state in first_level)
     second_level_tasks = list(enumerate(second_level))
@@ -195,7 +174,6 @@ def decide_move(start_state: State):
 
     results = [state_value(first_level[col_index], decision_map[col_index], True)
                for col_index in range(NUMBER_OF_COLS)]
-    print(results)
 
     return results.index(max(results))
 
@@ -224,16 +202,12 @@ VALUES_FOR_WINNER = {
 
 def state_value_from_children(turn, successor_values, log=False):
     if all(v == 1 for v in successor_values):
-        if log: print('mlagma')
         return 1
     if all(v == -1 for v in successor_values):
-        if log: print('se')
         return -1
     if 1 in successor_values and turn == COMPUTER:
-        if log: print('la')
         return 1
     if -1 in successor_values and turn == PLAYER:
-        if log: print('glo')
         return -1
 
     return sum(successor_values) / NUMBER_OF_COLS
@@ -242,7 +216,6 @@ def state_value_from_children(turn, successor_values, log=False):
 def state_value(state, successor_values, log=False):
     victor = winner(state)
     if victor:
-        print(state.last_player, state.position)
         return VALUES_FOR_WINNER[victor]
     else:
         return state_value_from_children(opponent(state.last_player),
@@ -260,21 +233,21 @@ def find_value_of_state(state, depth):
 
 
 def debug():
-    a = np.flip(np.array([[0, 0, 0, 0, 0, 0, 0],
-                          [0, 0, 0, 0, 0, 0, 0],
-                          [0, 0, 0, 0, 0, 0, 0],
-                          [0, 2, 0, 0, 0, 0, 0],
-                          [0, 1, 0, 0, 0, 0, 0],
-                          [0, 1, 0, 0, 0, 0, 0],
-                          [0, 1, 2, 0, 0, 0, 0],
-                          [0, 2, 1, 2, 0, 0, 0],
-                          [2, 1, 2, 1, 0, 0, 0],
-                          [2, 2, 1, 2, 1, 0, 1]]), axis=0)
-    print(winner(State((0, 4), 1, a)))
+    st = State(position=(3, 5), last_player=1, table=np.array([[2, 2, 1, 2, 0, 1, 2],
+                                                               [0, 0, 2, 1, 0, 1, 1],
+                                                               [0, 0, 0, 0, 0, 2, 0],
+                                                               [0, 0, 0, 0, 0, 1, 0],
+                                                               [0, 0, 0, 0, 0, 0, 0],
+                                                               [0, 0, 0, 0, 0, 0, 0],
+                                                               [0, 0, 0, 0, 0, 0, 0],
+                                                               [0, 0, 0, 0, 0, 0, 0],
+                                                               [0, 0, 0, 0, 0, 0, 0],
+                                                               [0, 0, 0, 0, 0, 0, 0]]))
+
+    print(find_value_of_state(st, 4))
 
 
 def main():
-    debug()
     if rank == 0:
         play_game()
     else:
