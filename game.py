@@ -155,11 +155,6 @@ def initial_state(cols) -> State:
 
 
 def decide_move(start_state: State):
-    if number_of_processes == 1:
-        results = [find_value_of_state(s, MAX_DEPTH + 2)
-                   for s in successors(start_state)]
-        return results.index(max(results))
-
     first_level = successors(start_state)
     second_level = flatten(successors(state) for state in first_level)
     second_level_tasks = list(enumerate(second_level))
@@ -168,6 +163,11 @@ def decide_move(start_state: State):
 
     comm.bcast(WORK)
     awake = number_of_processes - 1
+
+    if number_of_processes == 1:
+        for task_index, state in second_level_tasks:
+            value = find_value_of_state(state, MAX_DEPTH)
+            decision_map[task_index // NUMBER_OF_COLS].append(value)
 
     while awake:
         status = MPI.Status()
