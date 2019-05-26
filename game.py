@@ -91,10 +91,10 @@ def print_table(table: np.array):
     }
     rows, cols = table.shape
 
-    print("".join(f"{i:<3d}" for i in range(cols)))
+    print("".join("{0:<3d}".format(i) for i in range(cols)))
     for i in range(rows - 1, -1, -1):
         print("  ".join(symbols[x] for x in table[i, :]))
-    print("".join(f"{i:<3d}" for i in range(cols)))
+    print("".join("{0:<3d}".format(i) for i in range(cols)))
 
 
 def make_move(player, table, col):
@@ -179,7 +179,7 @@ def decide_move(start_state: State):
             task_index, value = message
             decision_map[task_index // NUMBER_OF_COLS].append(value)
 
-    results = [state_value(first_level[col_index], decision_map[col_index], True)
+    results = [state_value(first_level[col_index], decision_map[col_index])
                for col_index in range(NUMBER_OF_COLS)]
 
     return results.index(max(results))
