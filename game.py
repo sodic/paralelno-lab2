@@ -13,7 +13,7 @@ READY = 'ready'
 WORK = 'work'
 
 NUMBER_OF_COLS = 7
-MAX_DEPTH = 0
+MAX_DEPTH = 4
 
 EMPTY = 0
 COMPUTER = 1
