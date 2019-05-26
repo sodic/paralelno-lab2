@@ -1,9 +1,6 @@
 from os import system
-from random import randint
-from hashlib import sha1
 from collections import namedtuple
-from time import sleep
-from typing import List, Optional, Tuple
+from typing import List, Optional
 
 import numpy as np
 
@@ -29,6 +26,12 @@ number_of_processes = comm.Get_size()
 Position = namedtuple("Position", "row col")
 Table = np.array
 State = namedtuple("State", "position last_player table")
+
+VALUES_FOR_WINNER = {
+    COMPUTER: 1,
+    PLAYER: -1,
+    None: 0
+}
 
 
 def opponent(player):
@@ -117,6 +120,7 @@ def play_game():
     state = initial_state(NUMBER_OF_COLS)
     print_table(state.table)
     while True:
+        print()
         col = int(input("U koji stupac ubacujes zeton? "))
         state, won = move_and_check_victory(state, col)
         if won:
@@ -193,13 +197,6 @@ def worker():
             comm.send((index, find_value_of_state(state, MAX_DEPTH)), dest=0)
 
 
-VALUES_FOR_WINNER = {
-    COMPUTER: 1,
-    PLAYER: -1,
-    None: 0
-}
-
-
 def state_value_from_children(turn, successor_values, log=False):
     if all(v == 1 for v in successor_values):
         return 1
@@ -232,21 +229,6 @@ def find_value_of_state(state, depth):
     return state_value_from_children(turn, successor_values)
 
 
-def debug():
-    st = State(position=(3, 5), last_player=1, table=np.array([[2, 2, 1, 2, 0, 1, 2],
-                                                               [0, 0, 2, 1, 0, 1, 1],
-                                                               [0, 0, 0, 0, 0, 2, 0],
-                                                               [0, 0, 0, 0, 0, 1, 0],
-                                                               [0, 0, 0, 0, 0, 0, 0],
-                                                               [0, 0, 0, 0, 0, 0, 0],
-                                                               [0, 0, 0, 0, 0, 0, 0],
-                                                               [0, 0, 0, 0, 0, 0, 0],
-                                                               [0, 0, 0, 0, 0, 0, 0],
-                                                               [0, 0, 0, 0, 0, 0, 0]]))
-
-    print(find_value_of_state(st, 4))
-
-
 def main():
     if rank == 0:
         play_game()
@@ -256,51 +238,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-
-
-def test():
-    print(False is four_in_a_row(1, [3, 2, 4, 1, 1, 1, 5, 6]))
-    print(True is four_in_a_row(1, [3, 2, 1, 1, 1, 1, 5, 6]))
-    print(True is four_in_a_row(1, [3, 2, 1, 1, 1, 1, 5, 6, 1, 1, 1, 1]))
-    a = np.array([
-        [1, 2, 3],
-        [3, 2, 3],
-        [1, 2, 3],
-        [1, 2, 3],
-    ])
-    print(True is did_win(2, a, 3, 1))
-
-    a = np.array([
-        [3, 2, 3, 2],
-        [1, 3, 3, 1],
-        [1, 2, 3, 1],
-        [1, 1, 1, 1],
-    ])
-    print(True is did_win(1, a, 3, 1))
-
-    a = np.array([
-        [1, 2, 3, 2],
-        [1, 1, 3, 1],
-        [4, 2, 1, 4],
-        [5, 1, 1, 1],
-    ])
-    print(False is did_win_horizontal(1, a, 3))
-    print(False is did_win_vertical(1, a, 3))
-    print(True is did_win_diagonal(1, a, 3, 3))
-    print(True is did_win(1, a, 3, 3))
-
-    a = np.array([
-        [1, 1, 1, 1],
-        [1, 2, 0, 2],
-        [2, 0, 0, 2],
-        [2, 0, 0, 1],
-    ])
-    print_table(a)
-    b = np.array([[0, 0, 0, 0, 0, 0, 1],
-                  [0, 2, 1, 1, 0, 1, 2],
-                  [0, 2, 1, 2, 0, 2, 2],
-                  [0, 1, 1, 2, 2, 1, 2],
-                  [1, 2, 2, 2, 1, 1, 1]])
-    b = b[::-1]
-    print(did_win(2, b, 1, 4))
-    play_game()
