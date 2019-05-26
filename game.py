@@ -13,7 +13,7 @@ READY = 'ready'
 WORK = 'work'
 
 NUMBER_OF_COLS = 7
-MAX_DEPTH = 4
+MAX_DEPTH = 0
 
 EMPTY = 0
 COMPUTER = 1
@@ -155,6 +155,11 @@ def initial_state(cols) -> State:
 
 
 def decide_move(start_state: State):
+    if number_of_processes == 1:
+        results = [find_value_of_state(s, MAX_DEPTH + 2)
+                   for s in successors(start_state)]
+        return results.index(max(results))
+
     first_level = successors(start_state)
     second_level = flatten(successors(state) for state in first_level)
     second_level_tasks = list(enumerate(second_level))
