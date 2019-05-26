@@ -90,6 +90,8 @@ def print_table(table: np.array):
         EMPTY: '.',
     }
     rows, cols = table.shape
+
+    print("".join(f"{i:<3d}" for i in range(cols)))
     for i in range(rows - 1, -1, -1):
         print("  ".join(symbols[x] for x in table[i, :]))
     print("".join(f"{i:<3d}" for i in range(cols)))
@@ -128,6 +130,7 @@ def play_game():
             break
         print_table(state.table)
 
+        print()
         print("Razmisljam...")
         state, won = move_and_check_victory(state, decide_move(state))
         if won:
@@ -197,7 +200,7 @@ def worker():
             comm.send((index, find_value_of_state(state, MAX_DEPTH)), dest=0)
 
 
-def state_value_from_children(turn, successor_values, log=False):
+def state_value_from_children(turn, successor_values):
     if all(v == 1 for v in successor_values):
         return 1
     if all(v == -1 for v in successor_values):
@@ -210,13 +213,13 @@ def state_value_from_children(turn, successor_values, log=False):
     return sum(successor_values) / NUMBER_OF_COLS
 
 
-def state_value(state, successor_values, log=False):
+def state_value(state, successor_values):
     victor = winner(state)
     if victor:
         return VALUES_FOR_WINNER[victor]
     else:
         return state_value_from_children(opponent(state.last_player),
-                                         successor_values, log)
+                                         successor_values)
 
 
 def find_value_of_state(state, depth):
